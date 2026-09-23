@@ -1,10 +1,10 @@
-// Prefixes the terminal title with this worker's slot, so several opencode windows sharing
+// Prefixes the terminal title with this worker's slot, so several OpenCode windows sharing
 // one taskbar can be told apart. The slot is the chrome-devtools MCP profile number that
-// plugins/chrome-slot.js claims, not the repository's FM_SLOT development-stack slot. It is
-// read from the server's resolved config: the server runs in a Worker holding its own copy
-// of the environment, so a slot it claims never reaches this thread's process.env.
+// plugins/chrome-slot.js claims. It is read from the server's resolved config: the server
+// runs in a Worker holding its own copy of the environment, so a slot it claims never
+// reaches this thread's process.env.
 //
-// Install: name this file in the tui.json of an opencode config root, then restart:
+// Install: name this file in the tui.json of an OpenCode config root, then restart:
 //
 //   { "plugin": ["./tui-plugins/slot-title.js"] }
 //

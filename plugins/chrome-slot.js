@@ -1,7 +1,7 @@
-// Gives every opencode process its own chrome-devtools-mcp profile, the lowest slot no other
+// Gives every OpenCode process its own chrome-devtools-mcp profile, the lowest slot no other
 // running process holds, so parallel instances started as plain `opencode` never share one.
 // A CHROME_SLOT in the environment is only a preference, claimed like any other slot and
-// passed over when taken: a taken profile could not start Chrome anyway, and an opencode
+// passed over when taken: a taken profile could not start Chrome anyway, and an OpenCode
 // started from an agent shell inherits its parent's CHROME_SLOT, so it needs one of its own.
 //
 // The config hook writes the slot into the MCP's --userDataDir: plugins run after {env:...}

@@ -13,7 +13,7 @@
 // persisted either way: messages are re-read fresh from the database each step, so the
 // reminder reaches the model and is gone.
 //
-// Install: drop this file into a plugins/ directory under an opencode config root and
+// Install: drop this file into a plugins/ directory under an OpenCode config root and
 // restart. Server plugins are found there by a {plugin,plugins}/*.{ts,js} glob, so nothing
 // has to name the file in opencode.json. ~/.config/opencode/plugins/ makes it global,
 // a checkout's .opencode/plugins/ scopes it to that project.

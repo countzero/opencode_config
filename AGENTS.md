@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Global agent instructions: opencode loads this file into every session, in every
+Global agent instructions: OpenCode loads this file into every session, in every
 project, next to the project's own `AGENTS.md`. It carries only the personal
 rules that hold everywhere, one invariant per area. Where a project's
 `AGENTS.md` says otherwise, the project wins.
@@ -12,8 +12,8 @@ does not imply "push". No `Co-Authored-By` trailer.
 
 ## Browser Slots
 
-Every opencode process drives its own Chrome profile, and `CHROME_SLOT` in the
-shell names it. Chrome processes of another slot belong to another opencode
+Every OpenCode process drives its own Chrome profile, and `CHROME_SLOT` in the
+shell names it. Chrome processes of another slot belong to another OpenCode
 window: never kill, close or reuse them. Kill only processes whose command line
 carries `opencode-profile-$env:CHROME_SLOT`, and refuse when `CHROME_SLOT` is
 unset.
