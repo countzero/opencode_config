@@ -1,0 +1,208 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "anthropic/claude-opus-5-5",
+    "autoupdate": false,
+    "share": "disabled",
+
+    "agent": {
+        "build": { "model": "anthropic/claude-opus-5-5", "variant": "high" },
+        "plan": { "model": "anthropic/claude-opus-5-5", "variant": "high" },
+        "explore": { "model": "anthropic/claude-opus-5", "variant": "low" },
+        "general": { "model": "anthropic/claude-opus-5", "variant": "low" },
+    },
+
+    // Git snapshot diffs are re-serialized into every user-message event snapshot,
+    // which produced 6.4 GiB of a 11.9 GiB opencode.db. Costs undo/revert of file
+    // changes; git covers that. Revisit when anomalyco/opencode#42748 is fixed.
+    "snapshot": false,
+
+    "compaction": {
+        "prune": true
+    },
+
+    "plugin": ["opencode-claude-auth"],
+
+    "permission": {
+        "external_directory": {
+            "D:/Arbeit/**": "allow",
+            "E:/**": "allow"
+        },
+        "edit": {
+            "../*": "deny"
+        }
+    },
+
+    "mcp": {
+
+        "windows-mcp": {
+            "type": "remote",
+            "url": "http://10.0.0.53:8000/mcp",
+            "enabled": true,
+            "oauth": false,
+            "headers": {
+                "Authorization": "Bearer {file:~/.secrets/windows-mcp-key}"
+            }
+        },
+
+        "atlassian": {
+            "enabled": true,
+            "type": "remote",
+            "url": "https://mcp.atlassian.com/v1/mcp",
+            "oauth": {}
+        },
+
+        "chrome-devtools": {
+            "enabled": true,
+            "type": "local",
+            "command": [
+                "npx",
+                "-y",
+                "chrome-devtools-mcp@latest",
+                "--executablePath=C:/Users/{env:USERNAME}/AppData/Local/Chromium/Application/chrome.exe",
+                "--userDataDir=C:/Users/{env:USERNAME}/.cache/chrome-devtools-mcp/opencode-profile-{env:CHROME_SLOT}",
+                "--no-usage-statistics",
+                "--ignoreDefaultChromeArg=--enable-automation",
+            ]
+        },
+
+        "blender": {
+            "enabled": false,
+            "type": "local",
+            "command": [
+                "C:\\Miniconda\\envs\\blender-mcp\\python.exe",
+                "-m", "blmcp"
+            ]
+        }
+    },
+
+    "provider": {
+
+        "llama.cpp@PC-Finn": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "llama-server@PC-Finn",
+            "options": {
+                "baseURL": "http://pc-finn:8080/v1"
+            },
+            "models": {
+
+                "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf": {
+                    "name": "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 102400,
+                        "output": 65536
+                    }
+                },
+
+                "Muse-Glimmer-30B.IQ4_XS.gguf": {
+                    "name": "Muse-Glimmer-30B.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 131072,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.8-27B.IQ4_XS.gguf": {
+                    "name": "Qwen3.8-27B.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 131072,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.8-27B-Uncensored.IQ4_XS.gguf": {
+                    "name": "Qwen3.8-27B-Uncensored.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 131072,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.8-Flash-Next.IQ4_XS.gguf": {
+                    "name": "Qwen3.8-Flash-Next.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 262144,
+                        "output": 65536
+                    }
+                }
+            },
+        },
+
+        "llama.cpp@Laptop-Finn": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "llama-server@Laptop-Finn",
+            "options": {
+                "baseURL": "http://laptop-finn:8080/v1"
+            },
+            "models": {
+
+                 "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf": {
+                    "name": "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 156928,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.6-27B.IQ4_XS.gguf": {
+                    "name": "Qwen3.6-27B.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 262144,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.8-Flash-Next.IQ4_XS.gguf": {
+                    "name": "Qwen3.8-Flash-Next.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 262144,
+                        "output": 65536
+                    }
+                },
+
+                "Qwen3.6-35B-A3B.IQ4_XS.gguf": {
+                    "name": "Qwen3.6-35B-A3B.IQ4_XS.gguf",
+                    "modalities": {
+                        "input": ["text", "image"],
+                        "output": ["text"]
+                    },
+                    "limit": {
+                        "context": 262144,
+                        "output": 65536
+                    }
+                }
+            }
+        }
+    }
+}

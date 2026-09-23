@@ -1,0 +1,5 @@
+# opencode installs and pins its own plugin runtime here on every start.
+node_modules/
+package.json
+package-lock.json
+bun.lock
