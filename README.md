@@ -72,13 +72,6 @@ $env:CHROME_SLOT = '3'; opencode
 
 The mechanics are the header comments of [`plugins/chrome-slot.js`](./plugins/chrome-slot.js) and [`tui-plugins/slot-title.js`](./tui-plugins/slot-title.js).
 
-### Global rules and skills
-
-[`AGENTS.md`](./AGENTS.md) is loaded into every session in every project, next to the project's own `AGENTS.md`, which wins where the two disagree. The skills under [`skills/`](./skills) are available everywhere; `AGENTS.md` → *Skills* lists them.
-
-> [!NOTE]
-> A global skill overrides a project skill of the same name in OpenCode. Claude Code does not read this directory.
-
 ### Change the configuration
 
 Edit the files in place and restart OpenCode. Machine-specific values go through `{env:…}` or `{file:…}` rather than into the file, so the same `opencode.json` works on every machine; paths use `C:/Users/{env:USERNAME}/…`, because the backslashes in `USERPROFILE` would break the JSON.
