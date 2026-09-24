@@ -22,8 +22,8 @@
 
 import { lookup } from 'node:dns/promises';
 
-/** Bounds the startup delay an unreachable host causes; a reachable router on the LAN answers in ms. */
-const timeoutMs = 250;
+/** Bounds the startup delay an unreachable host causes; a LAN connect takes 3-7 ms. */
+const timeoutMs = 100;
 
 /** llama-server reports no output limit, and OpenCode budgets a reply by one. */
 const outputCeiling = 65536;

@@ -37,12 +37,10 @@
         "windows-mcp": {
             "type": "remote",
             "url": "http://10.0.0.53:8000/mcp",
-            "enabled": true,
+            // The VM is usually off, and an unreachable server holds the first prompt back
+            // for two 21 s connect attempts. Connect it in /mcps once the VM runs.
+            "enabled": false,
             "oauth": false,
-            // Bounds each of the two connect attempts (StreamableHTTP, then SSE), so the
-            // first prompt waits about 4 s instead of 43 s while the VM is off. It is also
-            // the limit for every tool call of this server.
-            "timeout": 2000,
             "headers": {
                 "Authorization": "Bearer {file:~/.secrets/windows-mcp-key}"
             }
