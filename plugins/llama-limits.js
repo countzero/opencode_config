@@ -20,8 +20,10 @@
 // Install: drop this file into ~/.config/opencode/plugins/ and restart. The loader calls
 // every export as a plugin, so this module exports nothing else.
 
-/** Bounds the startup delay an unreachable host causes; a reachable router answers in ms. */
-const timeoutMs = 1500;
+import { lookup } from 'node:dns/promises';
+
+/** Bounds the startup delay an unreachable host causes; a reachable router on the LAN answers in ms. */
+const timeoutMs = 250;
 
 /** llama-server reports no output limit, and OpenCode budgets a reply by one. */
 const outputCeiling = 65536;
@@ -71,8 +73,19 @@ const toModel = (entry, configured = {}) => {
     };
 };
 
+// A LAN name resolves to its IPv6 addresses first, llama-server listens on 0.0.0.0 by
+// default, and Bun tries the IPv6 addresses before IPv4: 6 s against a server on this
+// machine, far past timeoutMs.
+const modelsURL = async baseURL => {
+    const url = new URL(`${baseURL.replace(/\/+$/, '')}/models`);
+
+    url.hostname = (await lookup(url.hostname, { family: 4 })).address;
+
+    return url;
+};
+
 const fetchModels = async ({ baseURL, apiKey }) => {
-    const response = await fetch(`${baseURL.replace(/\/+$/, '')}/models`, {
+    const response = await fetch(await modelsURL(baseURL), {
         headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
         signal: AbortSignal.timeout(timeoutMs),
     });

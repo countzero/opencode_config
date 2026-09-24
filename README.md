@@ -93,7 +93,7 @@ The mechanics are the header comments of [`plugins/chrome-slot.js`](./plugins/ch
 
 ### llama-server models
 
-A `llama.cpp@…` provider in `opencode.json` carries only its `baseURL`. At startup, [`plugins/llama-limits.js`](./plugins/llama-limits.js) asks each router for the models of its preset file and adds them with their context limit and input modalities. A server that does not answer within 1.5 s shows no models.
+A `llama.cpp@…` provider in `opencode.json` carries only its `baseURL`. At startup, [`plugins/llama-limits.js`](./plugins/llama-limits.js) asks each router for the models of its preset file and adds them with their context limit and input modalities. A server that does not answer within 250 ms shows no models.
 
 > [!NOTE]
 > The list is read once per start: after starting llama-server or editing a preset, restart OpenCode.
