@@ -17,8 +17,11 @@ or a document is for is the repository's own rule: read its `AGENTS.md` first,
 and where it points at a conventions or documentation guide, that guide wins
 over anything below.
 
-The blocks are bash. On Windows they run in Git Bash (`bash -c '…'` from
-PowerShell); PowerShell's quoting breaks the `-z` pipelines.
+The blocks are bash. On Windows they run in Git Bash, called by its path
+(`& "$env:ProgramFiles\Git\bin\bash.exe" -c '…'` from PowerShell): a bare
+`bash` resolves to `C:\Windows\System32\bash.exe`, the WSL launcher, whose
+Linux git sees the tree through `/mnt/` under different line-ending and
+file-mode rules. PowerShell's quoting breaks the `-z` pipelines.
 
 ## Scope
 
