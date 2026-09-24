@@ -8,9 +8,11 @@
 // is resolved but before any MCP server starts, and the hook edits the very config object
 // the MCP service reads.
 //
-// Listening on a named pipe is the claim. Windows removes the pipe when its process ends,
-// however it ends, so a crashed instance never strands its slot. Bun reports a taken pipe
-// as ERR_INVALID_ARG_TYPE rather than EADDRINUSE, so any listen error counts as taken.
+// Listening is the claim: on a named pipe on Windows, elsewhere on a localhost TCP port,
+// because a Unix socket file would outlive a crash. The OS frees either when its process
+// ends, however it ends, so a crashed instance never strands its slot. Bun reports a taken
+// pipe as ERR_INVALID_ARG_TYPE rather than EADDRINUSE, and a port another program holds is
+// as unusable as one another instance holds, so any listen error counts as taken.
 //
 // One slot per process, not per directory, so parallel sessions share one logged-in profile.
 // The cost: after worktree_enter, the worktree's MCP cannot launch Chrome while the main
@@ -21,20 +23,27 @@
 
 import net from 'node:net';
 
-/** Only stops a broken pipe API from spinning forever; no machine runs this many instances. */
+/** Bounds the scan and keeps basePort + slot a valid port; no machine runs this many instances. */
 const slotCeiling = 1000;
+
+const basePort = 47300;
 
 /** Registry-global, so a config reload or a second directory reuses the claim. */
 const claimKey = Symbol.for('local.chrome-slot');
 
 const listen = slot => new Promise(resolve => {
-    net.createServer()
-        .once('error', () => resolve(false))
-        .listen(`\\\\.\\pipe\\opencode-chrome-slot-${slot}`, () => resolve(true));
+    const server = net.createServer().once('error', () => resolve(false));
+    const claimed = () => resolve(true);
+
+    if (process.platform === 'win32') {
+        server.listen(`\\\\.\\pipe\\opencode-chrome-slot-${slot}`, claimed);
+    } else {
+        server.listen(basePort + Number(slot), '127.0.0.1', claimed);
+    }
 });
 
 const claim = async preferred => {
-    if (/^\d+$/.test(preferred ?? '') && await listen(preferred)) {
+    if (/^\d+$/.test(preferred ?? '') && Number(preferred) < slotCeiling && await listen(preferred)) {
         return preferred;
     }
 

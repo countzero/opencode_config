@@ -1,14 +1,32 @@
 # OpenCode Configuration
 
-Personal global configuration for [OpenCode](https://opencode.ai) on Windows. The repository is the `~/.config/opencode` directory itself, so OpenCode reads it in place and every machine that clones it gets:
+[![Last commit](https://img.shields.io/github/last-commit/countzero/opencode_config)](https://github.com/countzero/opencode_config/commits/main) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![GitHub Sponsors](https://img.shields.io/github/sponsors/countzero?label=Sponsor&logo=GitHub)](https://github.com/sponsors/countzero) [![Ko-fi](https://img.shields.io/badge/Ko--fi-Tip-FF5E5B?logo=ko-fi&logoColor=white)](https://ko-fi.com/finnkumkar)
 
-1. The global `opencode.json` with models, agents, permissions, MCP servers and providers
-2. The TUI settings in `tui.json`
-3. Plugins that give every OpenCode instance its own Chrome profile slot and fill the llama-server providers from their presets
-4. Global rules in `AGENTS.md`
-5. Skills for working on this configuration in `.opencode/skills`, which load only when OpenCode runs inside this directory
+My global configuration for [OpenCode](https://opencode.ai) on Windows, published so others can take single plugins and skills. The repository is the `~/.config/opencode` directory itself, so OpenCode reads it in place.
 
-## Installation
+## Contents
+
+| Path                            | What it does                                        | Runs on |
+| ------------------------------- | --------------------------------------------------- | ------- |
+| `plugins/todo-state.js`         | Re-states the open todo list on every step          | any     |
+| `plugins/llama-limits.js`       | Fills llama-server providers from their presets     | any     |
+| `plugins/chrome-slot.js`        | Gives every OpenCode process its own Chrome profile | Windows |
+| `tui-plugins/slot-title.js`     | Shows the Chrome slot in the terminal title         | Windows |
+| `.opencode/skills/plan-review/` | Second-pass design review of a plan                 | any     |
+| `.opencode/skills/trim-prose/`  | Tightens the comments and docs a branch changes     | bash    |
+| `opencode.json`                 | Models, agents, permissions, MCP servers, providers | Windows |
+| `tui.json`                      | Theme and the TUI plugin                            | any     |
+| `AGENTS.md`                     | Rules loaded into every session                     | any     |
+
+## Reuse a Plugin or Skill
+
+Every plugin states how to install it in its header comment. A skill directory goes into `~/.config/opencode/skills/` to load in every project, or into a project's `.opencode/skills/` to load only there; here the skills sit in `.opencode/skills/`, so they load only when OpenCode runs inside this directory.
+
+The plugins are tested against OpenCode 1.18.32, which `"autoupdate": false` keeps in place. `todo-state.js` relies on an experimental hook and `slot-title.js` patches the renderer, so a newer release can break either. On Linux and macOS, `chrome-slot.js` claims a localhost port instead of a named pipe; that path is not yet tested end to end.
+
+## Install the Whole Configuration
+
+This replaces your own configuration and assumes my setup: Windows, the MCP servers in `opencode.json`, and llama-server hosts on my network.
 
 ### 1. Install Prerequisites
 
@@ -25,7 +43,7 @@ Move an existing configuration aside, then clone the repository into its place:
 
 ```PowerShell
 Rename-Item "$HOME\.config\opencode" "opencode.backup" -ErrorAction SilentlyContinue
-git clone git@github.com:countzero/opencode_config.git "$HOME\.config\opencode"
+git clone https://github.com/countzero/opencode_config.git "$HOME\.config\opencode"
 ```
 
 ### 3. Add the secrets
@@ -83,3 +101,16 @@ A `llama.cpp@…` provider in `opencode.json` carries only its `baseURL`. At sta
 ### Change the configuration
 
 Edit the files in place and restart OpenCode. Machine-specific values go through `{env:…}` or `{file:…}` rather than into the file, so the same `opencode.json` works on every machine; paths use `C:/Users/{env:USERNAME}/…`, because the backslashes in `USERPROFILE` would break the JSON.
+
+## License
+
+[MIT](./LICENSE)
+
+## Support
+
+If a plugin or skill here saves you a hassle, consider supporting future work:
+
+- [GitHub Sponsors](https://github.com/sponsors/countzero): recurring or one-time.
+- [Ko-fi](https://ko-fi.com/finnkumkar): one-time tip, no signup required.
+
+<a href="https://ko-fi.com/finnkumkar"><img src="https://storage.ko-fi.com/cdn/kofi2.png?v=6" alt="Support on Ko-fi" width="180"></a>

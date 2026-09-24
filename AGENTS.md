@@ -10,13 +10,18 @@ rules that hold everywhere, one invariant per area. Where a project's
 Commit only when explicitly asked, push only when explicitly asked, and "commit"
 does not imply "push". No `Co-Authored-By` trailer.
 
+## Task Tracking
+
+Work of more than one step keeps the todo tool current, one item in progress and
+each ticked off as it finishes, so a human can follow along.
+
 ## Browser Slots
 
 Every OpenCode process drives its own Chrome profile, and `CHROME_SLOT` in the
 shell names it. Chrome processes of another slot belong to another OpenCode
 window: never kill, close or reuse them. Kill only processes whose command line
-carries `opencode-profile-$env:CHROME_SLOT`, and refuse when `CHROME_SLOT` is
-unset.
+carries `opencode-profile-` followed by the value of `CHROME_SLOT`, and refuse
+when that variable is unset.
 
 ## Output Formatting
 
