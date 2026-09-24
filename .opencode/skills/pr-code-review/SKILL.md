@@ -174,7 +174,7 @@ Correctness rules no tool checks here. Apply them in every pass.
   reaches the repository.
 - **Shared resources:** Chrome profiles, slots and processes belong to the
   OpenCode process that claimed them; code must never touch another slot's
-  (`AGENTS.md` → *Browser Slots*).
+  (`.opencode/AGENTS.md` → *Browser Slots*).
 
 ## Final Summary
 
@@ -210,7 +210,7 @@ of git; check with `git check-ignore -q .tmp/reviews` and stop before writing
 if it does not. Write nowhere else.
 
 Every markdown table in the report pads each cell so all cells of a column
-share one width (`AGENTS.md` → *Output Formatting*).
+share one width (`.opencode/AGENTS.md` → *Output Formatting*).
 
 **Filenames:**
 

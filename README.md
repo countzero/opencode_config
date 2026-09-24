@@ -16,7 +16,7 @@ My global configuration for [OpenCode](https://opencode.ai) on Windows, publishe
 | `.opencode/skills/trim-prose/`  | Tightens the comments and docs a branch changes     | bash    |
 | `opencode.json`                 | Models, agents, permissions, MCP servers, providers | Windows |
 | `tui.json`                      | Theme and the TUI plugin                            | any     |
-| `AGENTS.md`                     | Rules loaded into every session                     | any     |
+| `.opencode/AGENTS.md`           | Rules for sessions inside this repository           | any     |
 
 ## Reuse a Plugin or Skill
 

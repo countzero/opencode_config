@@ -3,7 +3,6 @@
 
 !.gitignore
 !.gitattributes
-!AGENTS.md
 !LICENSE
 !README.md
 !opencode.json
@@ -16,6 +15,8 @@
 !tui-plugins/*.js
 
 !.opencode/
+!.opencode/AGENTS.md
+!.opencode/opencode.json
 !.opencode/skills/
 !.opencode/skills/**
 

@@ -1,9 +1,9 @@
 # AGENTS.md
 
-Global agent instructions: OpenCode loads this file into every session, in every
-project, next to the project's own `AGENTS.md`. It carries only the personal
-rules that hold everywhere, one invariant per area. Where a project's
-`AGENTS.md` says otherwise, the project wins.
+Agent instructions for this repository only. A root `AGENTS.md` would sit at
+`~/.config/opencode/AGENTS.md` and load into every session in every project, so
+this file lives in `.opencode/` and `.opencode/opencode.json` names it under
+`instructions`, which OpenCode reads only inside this repository.
 
 ## Version Control
 
