@@ -24,12 +24,3 @@ Pad every cell of a markdown table so all cells of a column share one width.
 The em dash is reserved for interrupted dialogue and a genuine break in
 thought; everywhere else use the specific mark. American spelling in code,
 comments and English prose.
-
-## Skills
-
-Each skill's own description says when to load it.
-
-| Skill         | Purpose                                                                  |
-| ------------- | ------------------------------------------------------------------------ |
-| `plan-review` | Second pass over a non-trivial plan through ten design lenses            |
-| `trim-prose`  | Editing pass over the comments and documents a branch adds or changes    |

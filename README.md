@@ -4,8 +4,9 @@ Personal global configuration for [OpenCode](https://opencode.ai) on Windows. Th
 
 1. The global `opencode.json` with models, agents, permissions, MCP servers and providers
 2. The TUI settings in `tui.json`
-3. Plugins that give every OpenCode instance its own Chrome profile slot
-4. Global rules in `AGENTS.md` and the skills they list
+3. Plugins that give every OpenCode instance its own Chrome profile slot and fill the llama-server providers from their presets
+4. Global rules in `AGENTS.md`
+5. Skills for working on this configuration in `.opencode/skills`, which load only when OpenCode runs inside this directory
 
 ## Installation
 
@@ -14,7 +15,7 @@ Personal global configuration for [OpenCode](https://opencode.ai) on Windows. Th
 Download and install the latest versions:
 
 * [Git](https://git-scm.com/download)
-* [Node.js LTS](https://nodejs.org/en/download), whose `npx` starts the `chrome-devtools` MCP server
+* [Node.js LTS](https://nodejs.org/en/download), installed to `C:\Program Files\nodejs`, whose `npx` starts the `chrome-devtools` MCP server
 * [OpenCode](https://opencode.ai/docs/#install)
 * [Chromium](https://www.chromium.org/getting-involved/download-chromium/), installed per user to `C:\Users\<name>\AppData\Local\Chromium`
 
@@ -71,6 +72,13 @@ $env:CHROME_SLOT = '3'; opencode
 > The preference is honored only while the slot is free; a taken slot falls back to the lowest free one. A slot is released when its OpenCode process ends, however it ends.
 
 The mechanics are the header comments of [`plugins/chrome-slot.js`](./plugins/chrome-slot.js) and [`tui-plugins/slot-title.js`](./tui-plugins/slot-title.js).
+
+### llama-server models
+
+A `llama.cpp@…` provider in `opencode.json` carries only its `baseURL`. At startup, [`plugins/llama-limits.js`](./plugins/llama-limits.js) asks each router for the models of its preset file and adds them with their context limit and input modalities. A server that does not answer within 1.5 s shows no models.
+
+> [!NOTE]
+> The list is read once per start: after starting llama-server or editing a preset, restart OpenCode.
 
 ### Change the configuration
 

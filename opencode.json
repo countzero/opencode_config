@@ -7,8 +7,8 @@
     "agent": {
         "build": { "model": "anthropic/claude-opus-5-5", "variant": "high" },
         "plan": { "model": "anthropic/claude-opus-5-5", "variant": "high" },
-        "explore": { "model": "anthropic/claude-opus-5", "variant": "low" },
-        "general": { "model": "anthropic/claude-opus-5", "variant": "low" },
+        "explore": { "model": "anthropic/claude-opus-5-5", "variant": "low" },
+        "general": { "model": "anthropic/claude-opus-5-5", "variant": "low" },
     },
 
     // Git snapshot diffs are re-serialized into every user-message event snapshot,
@@ -55,14 +55,22 @@
             "enabled": true,
             "type": "local",
             "command": [
-                "npx",
+                "C:/Program Files/nodejs/npx.cmd",
                 "-y",
                 "chrome-devtools-mcp@latest",
                 "--executablePath=C:/Users/{env:USERNAME}/AppData/Local/Chromium/Application/chrome.exe",
                 "--userDataDir=C:/Users/{env:USERNAME}/.cache/chrome-devtools-mcp/opencode-profile-{env:CHROME_SLOT}",
                 "--no-usage-statistics",
                 "--ignoreDefaultChromeArg=--enable-automation",
-            ]
+                "--chromeArg=--disable-blink-features=AutomationControlled"
+            ],
+            // The npx shim resolves `node` from Path again, so an active conda env would
+            // otherwise pick the MCP's Node. npx checks the registry on every start, which
+            // can outlast the default 5 s tool-list timeout.
+            "timeout": 15000,
+            "environment": {
+                "Path": "C:\\Program Files\\nodejs;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem"
+            }
         },
 
         "blender": {
@@ -75,6 +83,7 @@
         }
     },
 
+    // The models of a llama.cpp provider come from its server's presets (plugins/llama-limits.js).
     "provider": {
 
         "llama.cpp@PC-Finn": {
@@ -82,69 +91,7 @@
             "name": "llama-server@PC-Finn",
             "options": {
                 "baseURL": "http://pc-finn:8080/v1"
-            },
-            "models": {
-
-                "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf": {
-                    "name": "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 102400,
-                        "output": 65536
-                    }
-                },
-
-                "Muse-Glimmer-30B.IQ4_XS.gguf": {
-                    "name": "Muse-Glimmer-30B.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 131072,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.8-27B.IQ4_XS.gguf": {
-                    "name": "Qwen3.8-27B.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 131072,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.8-27B-Uncensored.IQ4_XS.gguf": {
-                    "name": "Qwen3.8-27B-Uncensored.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 131072,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.8-Flash-Next.IQ4_XS.gguf": {
-                    "name": "Qwen3.8-Flash-Next.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 262144,
-                        "output": 65536
-                    }
-                }
-            },
+            }
         },
 
         "llama.cpp@Laptop-Finn": {
@@ -152,56 +99,6 @@
             "name": "llama-server@Laptop-Finn",
             "options": {
                 "baseURL": "http://laptop-finn:8080/v1"
-            },
-            "models": {
-
-                 "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf": {
-                    "name": "gemma-4-31B-it-qat-q4_0.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 156928,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.6-27B.IQ4_XS.gguf": {
-                    "name": "Qwen3.6-27B.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 262144,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.8-Flash-Next.IQ4_XS.gguf": {
-                    "name": "Qwen3.8-Flash-Next.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 262144,
-                        "output": 65536
-                    }
-                },
-
-                "Qwen3.6-35B-A3B.IQ4_XS.gguf": {
-                    "name": "Qwen3.6-35B-A3B.IQ4_XS.gguf",
-                    "modalities": {
-                        "input": ["text", "image"],
-                        "output": ["text"]
-                    },
-                    "limit": {
-                        "context": 262144,
-                        "output": 65536
-                    }
-                }
             }
         }
     }
