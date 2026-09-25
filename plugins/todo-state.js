@@ -31,11 +31,14 @@ const render = todos => {
     }
 
     // Anthropic models are conditioned to read this wrapper as out-of-band instruction.
+    // Stated, not asked: a conditional request ("if this no longer matches, call todowrite")
+    // gets answered in the reply, step after step ("the todo list still matches").
     return [
         '<system-reminder>',
         'Your stored todo list:',
         ...open.map(todo => `${todo.status}: ${todo.content}`),
-        'If this no longer matches what you have done, call todowrite now.',
+        'Bookkeeping only: update it with todowrite as items finish.',
+        'Your reply is to the user and does not mention this reminder or whether the list matches.',
         '</system-reminder>',
     ].join('\n');
 };
