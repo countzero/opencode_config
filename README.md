@@ -64,7 +64,24 @@ Set-Content -NoNewline "$HOME\.secrets\windows-mcp-key" "<token>"
 > [!IMPORTANT]
 > OpenCode refuses to start while a referenced file is missing (`bad file reference: … does not exist`), so create every file in the table before the first start.
 
-### 4. Start OpenCode
+### 4. Set the experimental flags
+
+These settings exist only as environment variables, not as `opencode.json` keys, so they go into the PowerShell profile (`$PROFILE.CurrentUserAllHosts`) and reach every OpenCode started from that shell:
+
+```PowerShell
+$env:OPENCODE_EXPERIMENTAL_CODE_MODE = 'true'
+$env:OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX = '128000'
+```
+
+| Variable                                 | Effect                                                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `OPENCODE_EXPERIMENTAL_CODE_MODE`        | Reaches the MCP tools through one script tool and a search instead of listing each one      |
+| `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` | Raises the output cap per reply from 32,000 tokens to 128,000, the Claude models' own limit |
+
+> [!IMPORTANT]
+> Thinking counts against the output cap, and a reply that reaches it ends as if it had finished, with no error. At 32,000 a long thinking pass at `max` effort can end a turn with no text and no tool call. A value above the model's limit has no effect, because OpenCode sends the lower of the two.
+
+### 5. Start OpenCode
 
 Start OpenCode in any project directory:
 
