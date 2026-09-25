@@ -15,14 +15,13 @@
 // exporting tui() rather than server(). The TUI loads it from tui.json regardless, so the
 // cost is one error line per session start.
 //
-// On Windows a copy also knocks the title off the tab. OpenCode copies by starting
-// powershell.exe on the console it runs in, and Windows PowerShell 5.1 renames that console
-// as it starts, which the terminal shows until the title is written again (upstream #32293;
-// 1.x will not fix it). The spawn is out of reach: OpenCode bound child_process.spawn at
-// import, so replacing it changes nothing. Every copy clears the selection right after
-// starting its clipboard write, though, so a clear with text selected opens a watch of a
-// few seconds on the console title that writes the title back whenever it changes. Drop
-// watchCopies once OpenCode copies without PowerShell.
+// On Windows a copy or an image paste also knocks the title off the tab. OpenCode runs both
+// through powershell.exe on the console it runs in, and Windows PowerShell 5.1 renames that
+// console as it starts, which the terminal shows until the title is written again (upstream
+// #32293; 1.x will not fix it). OpenCode bound child_process.spawn at import, but Bun's
+// child_process.spawn looks up Bun.spawn on every call, so wrapping Bun.spawn sees each
+// PowerShell start. While one runs, a poll on the console title writes the title back
+// whenever it changes. Drop watchPowerShell once OpenCode stops calling PowerShell.
 
 const id = 'local.slot-title';
 
@@ -39,8 +38,8 @@ const homeTitle = 'OpenCode';
  */
 const turnBoundary = 'session.status';
 
-/** Long enough for a cold Windows PowerShell to start and exit; each copy restarts it. */
-const watchMilliseconds = 3000;
+/** Windows PowerShell 5.1, the one that renames the console; OpenCode never starts pwsh. */
+const powerShell = /(?:^|[\\/])powershell(?:\.exe)?$/i;
 
 const pollMilliseconds = 100;
 
@@ -48,22 +47,22 @@ const pollMilliseconds = 100;
 const titleCapacity = 1024;
 
 /**
- * Uncovers the renderer method a patch hid.
+ * Uncovers the method the patch hid.
  *
- * Both patched methods are `CliRenderer.prototype`'s, so patching one added an own property;
+ * `setTerminalTitle` is `CliRenderer.prototype`'s, so patching it added an own property;
  * deleting that property restores the prototype lookup, where assigning the bound original
  * back would leave a bound copy shadowing it forever. A descriptor is only present when
  * another plugin patched first, and then it holds that plugin's wrapper rather than the
  * prototype method.
  */
-const restore = (renderer, name, descriptor) => {
+const restore = (renderer, descriptor) => {
     if (descriptor) {
-        Object.defineProperty(renderer, name, descriptor);
+        Object.defineProperty(renderer, 'setTerminalTitle', descriptor);
 
         return;
     }
 
-    delete renderer[name];
+    delete renderer.setTerminalTitle;
 };
 
 /**
@@ -102,58 +101,73 @@ const consoleTitleReader = async () => {
             return decoder.decode(buffer.subarray(0, length));
         };
     } catch (error) {
-        console.error(`${id}: no console title, so a copy still resets the title`, error);
+        console.error(`${id}: no console title, so copy and paste still reset the title`, error);
 
         return undefined;
     }
 };
 
 /**
- * Writes the title back while a copy's PowerShell renames the console; the header says why.
- * @param renderer - The renderer, whose clearSelection every copy calls.
+ * Writes the title back while a PowerShell runs on the console; the header says why.
  * @param readConsoleTitle - Reads the title the console holds now.
  * @param expected - Returns the title last written, empty while the title is off.
  * @param repair - Writes that title again.
- * @returns What removes the patch.
+ * @returns What removes the wrap.
  */
-const watchCopies = (renderer, readConsoleTitle, expected, repair) => {
-    const descriptor = Object.getOwnPropertyDescriptor(renderer, 'clearSelection');
-    const original = renderer.clearSelection.bind(renderer);
+const watchPowerShell = (readConsoleTitle, expected, repair) => {
+    const original = Bun.spawn;
 
-    let deadline = 0;
+    let running = 0;
     let interval;
+    let disposed = false;
 
+    // Past the first repair too: an elevated PowerShell renames the console twice.
     const check = () => {
-        if (Date.now() > deadline) {
-            clearInterval(interval);
-            interval = undefined;
-
-            return;
-        }
-
-        // Past the first repair too: an elevated PowerShell renames the console twice.
         if (expected() && readConsoleTitle() !== expected()) {
             repair();
         }
     };
 
-    const wrapper = (...args) => {
-        // A click away from a selection clears it too; its watch finds nothing.
-        if (expected() && renderer.getSelection()?.getSelectedText()) {
-            deadline = Date.now() + watchMilliseconds;
-            interval ??= setInterval(check, pollMilliseconds);
+    // Checks once more, since a rename just before the exit outlives the poll.
+    const exited = () => {
+        running -= 1;
+
+        if (disposed) {
+            return;
         }
 
-        return original(...args);
+        check();
+
+        if (running === 0) {
+            clearInterval(interval);
+            interval = undefined;
+        }
     };
 
-    renderer.clearSelection = wrapper;
+    // Bun.spawn(cmd, options) and Bun.spawn({ cmd, ...options }) both reach here.
+    const wrapper = function (...args) {
+        const subprocess = original.apply(this, args);
+        const command = Array.isArray(args[0]) ? args[0] : args[0]?.cmd;
+
+        if (!disposed && powerShell.test(command?.[0] ?? '')) {
+            running += 1;
+            interval ??= setInterval(check, pollMilliseconds);
+            subprocess.exited.then(exited, exited);
+        }
+
+        return subprocess;
+    };
+
+    // Writable but not configurable, so assignment is the only way on and off.
+    Bun.spawn = wrapper;
 
     return () => {
+        disposed = true;
         clearInterval(interval);
 
-        if (renderer.clearSelection === wrapper) {
-            restore(renderer, 'clearSelection', descriptor);
+        // Whoever wrapped over this one owns the property now.
+        if (Bun.spawn === wrapper) {
+            Bun.spawn = original;
         }
     };
 };
@@ -183,8 +197,8 @@ const tui = async api => {
         writtenTitle = title && slot ? `[${slot}] ${title}` : title;
         original(writtenTitle);
 
-        // The console keeps a title of its own, the one a copy's PowerShell overwrites and
-        // the watch compares; an empty title hands back the shell's.
+        // The console keeps a title of its own, the one PowerShell overwrites and the watch
+        // compares; an empty title hands back the shell's.
         if (readConsoleTitle) {
             process.title = writtenTitle || shellTitle;
         }
@@ -200,7 +214,7 @@ const tui = async api => {
     const unsubscribe = api.event.on(turnBoundary, () => wrapper(requestedTitle));
 
     const unwatch = readConsoleTitle
-        ? watchCopies(renderer, readConsoleTitle, () => writtenTitle, () => wrapper(requestedTitle))
+        ? watchPowerShell(readConsoleTitle, () => writtenTitle, () => wrapper(requestedTitle))
         : () => {};
 
     api.lifecycle.onDispose(() => {
@@ -209,7 +223,7 @@ const tui = async api => {
 
         // Whoever wrapped over this one owns the property now.
         if (renderer.setTerminalTitle === wrapper) {
-            restore(renderer, 'setTerminalTitle', descriptor);
+            restore(renderer, descriptor);
         }
     });
 };
