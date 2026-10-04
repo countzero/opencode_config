@@ -11,6 +11,7 @@ My global configuration for [OpenCode](https://opencode.ai) on Windows, publishe
 | `plugins/todo-state.js`         | Re-states the open todo list on every step          | any     |
 | `plugins/llama-limits.js`       | Fills llama-server providers from their presets     | any     |
 | `plugins/chrome-slot.js`        | Gives every OpenCode process its own Chrome profile | Windows |
+| `plugins/background-guard.js`   | Limits background subagents to capped explore tasks | any     |
 | `tui-plugins/slot-title.js`     | Shows the Chrome slot in the terminal title         | Windows |
 | `.opencode/skills/plan-review/` | Second-pass design review of a plan                 | any     |
 | `.opencode/skills/trim-prose/`  | Tightens the comments and docs a branch changes     | bash    |
@@ -22,7 +23,7 @@ My global configuration for [OpenCode](https://opencode.ai) on Windows, publishe
 
 Every plugin states how to install it in its header comment. A skill directory goes into `~/.config/opencode/skills/` to load in every project, or into a project's `.opencode/skills/` to load only there; here the skills sit in `.opencode/skills/`, so they load only when OpenCode runs inside this directory.
 
-The plugins are tested against OpenCode 1.18.32, which `"autoupdate": false` keeps in place. `todo-state.js` relies on an experimental hook and `slot-title.js` patches the renderer, so a newer release can break either. On Linux and macOS, `chrome-slot.js` claims a localhost port instead of a named pipe; that path is not yet tested end to end.
+The plugins are tested against OpenCode 1.18.34, which `"autoupdate": false` keeps in place. `todo-state.js` relies on an experimental hook, `background-guard.js` on an experimental feature and `slot-title.js` patches the renderer, so a newer release can break any of them. On Linux and macOS, `chrome-slot.js` claims a localhost port instead of a named pipe; that path is not yet tested end to end.
 
 ## Install the Whole Configuration
 
@@ -71,12 +72,14 @@ These settings exist only as environment variables, not as `opencode.json` keys,
 ```PowerShell
 $env:OPENCODE_EXPERIMENTAL_CODE_MODE = 'true'
 $env:OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX = '128000'
+$env:OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS = 'true'
 ```
 
-| Variable                                 | Effect                                                                                      |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `OPENCODE_EXPERIMENTAL_CODE_MODE`        | Reaches the MCP tools through one script tool and a search instead of listing each one      |
-| `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX` | Raises the output cap per reply from 32,000 tokens to 128,000, the Claude models' own limit |
+| Variable                                     | Effect                                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `OPENCODE_EXPERIMENTAL_CODE_MODE`            | Reaches the MCP tools through one script tool and a search instead of listing each one      |
+| `OPENCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX`     | Raises the output cap per reply from 32,000 tokens to 128,000, the Claude models' own limit |
+| `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS` | Lets the task tool run subagents in the background while the conversation goes on           |
 
 > [!IMPORTANT]
 > Thinking counts against the output cap, and a reply that reaches it ends as if it had finished, with no error. At 32,000 a long thinking pass at `max` effort can end a turn with no text and no tool call. A value above the model's limit has no effect, because OpenCode sends the lower of the two.
@@ -114,6 +117,15 @@ A `llama.cpp@…` provider in `opencode.json` carries only its `baseURL`. At sta
 
 > [!NOTE]
 > The list is read once per start: after starting llama-server or editing a preset, restart OpenCode.
+
+### Background subagents
+
+With `OPENCODE_EXPERIMENTAL_BACKGROUND_SUBAGENTS` on, the agent can start a subagent in the background and keep talking; its result arrives as a separate message when it finishes. **Ctrl+B** moves a running foreground subagent to the background. **Esc** on the session stops all of its background tasks; there is no way to stop a single one.
+
+[`plugins/background-guard.js`](./plugins/background-guard.js) allows background tasks only for the read-only `explore` agent and at most 20 running per session; a background call for another agent or beyond the cap fails with an error that tells the agent to run it in the foreground. It also asks the agent to announce what it starts and to report once all results are in. Without the flag the plugin does nothing.
+
+> [!NOTE]
+> Browser work stays in the foreground: one OpenCode process has one Chrome profile, and parallel browser tasks would collide on it.
 
 ### Change the configuration
 
