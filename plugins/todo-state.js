@@ -4,7 +4,8 @@
 //
 //   https://github.com/anomalyco/opencode/issues/41359  (list goes stale mid-task)
 //   https://github.com/anomalyco/opencode/issues/27560  (items never marked completed)
-//   https://github.com/anomalyco/opencode/pull/48729    (the proposed fix)
+//   https://github.com/anomalyco/opencode/pull/48729    (a fix, closed unmerged)
+//   https://github.com/anomalyco/opencode/pull/52813    (clears the desktop dock only)
 //
 // Last in the array, after the newest tool result, because a prompt cache keys on an exact
 // prefix: there a todo change re-writes only the reminder, whereas on the last user message
@@ -23,7 +24,23 @@ const openStatuses = new Set([
     'in_progress',
 ]);
 
-const render = todos => {
+// The user's prompts since the newest todowrite in view. Nothing deletes a stored list, so
+// an interrupted task's list outlives the task. Compared by time, as a compaction reorders
+// the messages, and a write it summarized away dates before all of them. Synthetic text is
+// compaction's own "continue", not a prompt.
+const promptsSinceWrite = messages => {
+    const written = Math.max(0, ...messages
+        .flatMap(message => message.parts)
+        .filter(part => part.type === 'tool' && part.tool === 'todowrite'
+            && part.state.status === 'completed')
+        .map(part => part.state.time.end));
+
+    return messages.filter(message => message.info.role === 'user'
+        && message.info.time.created > written
+        && message.parts.some(part => part.type === 'text' && !part.synthetic)).length;
+};
+
+const render = (todos, carried) => {
     const open = todos.filter(todo => openStatuses.has(todo.status));
 
     if (open.length === 0) {
@@ -35,7 +52,9 @@ const render = todos => {
     // gets answered in the reply, step after step ("the todo list still matches").
     return [
         '<system-reminder>',
-        'Your stored todo list:',
+        carried
+            ? 'Your stored todo list, written before the user\'s latest message:'
+            : 'Your stored todo list:',
         ...open.map(todo => `${todo.status}: ${todo.content}`),
         'Bookkeeping only: update it with todowrite as items finish.',
         'Your reply is to the user and does not mention this reminder or whether the list matches.',
@@ -80,6 +99,13 @@ export const TodoState = async ({ client }) => ({
                 return;
             }
 
+            const prompts = promptsSinceWrite(output.messages);
+
+            // Left alone through a whole reminded turn: abandoned rather than pending.
+            if (prompts > 1) {
+                return;
+            }
+
             // Read per step rather than cached from `todo.updated`: plugin event delivery is
             // filtered by directory, so a session moved into a worktree starves such a cache.
             const response = await client.session.todo({
@@ -87,7 +113,7 @@ export const TodoState = async ({ client }) => ({
                     id: target.info.sessionID,
                 },
             });
-            const text = render(Array.isArray(response.data) ? response.data : []);
+            const text = render(Array.isArray(response.data) ? response.data : [], prompts > 0);
 
             if (text === undefined) {
                 return;
